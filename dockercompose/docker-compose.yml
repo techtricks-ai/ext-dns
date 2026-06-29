@@ -1,0 +1,25 @@
+services:
+  external-dns:
+    image: techtricks/docker-external-dns:v0.0.1
+    container_name: external-dns
+    env_file: .env
+    environment:
+      DNS_PROVIDER: pihole # Use Pi-hole as the DNS provider to manage records
+      PIHOLE_URL: ${PIHOLE_HOST_URL} # URL to access Pi-hole's API 
+      PIHOLE_PASSWORD: ${PIHOLE_PASSWORD} # Use Pihole Web Password or App Password (for Pihole V6)
+      DNS_SOURCE: traefik
+      TRAEFIK_API_URL: ${TRAEFIK_API_URL} # Point to Traefik API for to get records and watch for changes
+      TRAEFIK_TARGET_IP: ${TRAEFIK_TARGET_IP} # The target IP that DNS records should point to
+      TRAEFIK_USERNAME: ${TRAEFIK_USERNAME} # If Traefik API is protected with basic auth
+      TRAEFIK_PASSWORD: ${TRAEFIK_PASSWORD} # If Traefik API is protected with basic auth
+      TRAEFIK_SKIP_VERIFY: true # Skip TLS verification if Traefik API is using self-signed certs
+      INTERVAL_SECONDS: 60 # How often to check for changes and update DNS records
+      DOMAIN_FILTER: ${DOMAIN_FILTER} # Only manage records for domains matching this filter (e.g. "example.com")
+      LOG_LEVEL: info # Log level for troubleshooting (debug, info, warn, error)
+    restart: unless-stopped
+    networks:
+      - ext-dns-net
+
+networks:
+  ext-dns-net:
+    driver: bridge
