@@ -1,9 +1,23 @@
 package config
 
 import (
+	"os"
 	"reflect"
 	"testing"
 )
+
+func unsetEnv(t *testing.T, key string) {
+	t.Helper()
+	originalVal, exists := os.LookupEnv(key)
+	if err := os.Unsetenv(key); err != nil {
+		t.Fatalf("failed to unset env %s: %v", key, err)
+	}
+	if exists {
+		t.Cleanup(func() {
+			os.Setenv(key, originalVal)
+		})
+	}
+}
 
 func TestSplitAndTrim(t *testing.T) {
 	tests := []struct {
@@ -53,21 +67,21 @@ func TestSplitAndTrim(t *testing.T) {
 }
 
 func TestLoadConfig_Defaults(t *testing.T) {
-	// Clear any potential real environment variables for test reliability
-	t.Setenv("DNS_PROVIDER", "")
-	t.Setenv("DNS_SOURCE", "")
-	t.Setenv("INTERVAL_SECONDS", "")
-	t.Setenv("IDENTIFIER", "")
-	t.Setenv("LOG_LEVEL", "")
-	t.Setenv("DOMAIN_FILTER", "")
-	t.Setenv("CF_API_TOKEN", "")
-	t.Setenv("PIHOLE_URL", "")
-	t.Setenv("PIHOLE_API_TOKEN", "")
-	t.Setenv("PIHOLE_API_VERSION", "")
-	t.Setenv("PIHOLE_PASSWORD", "")
-	t.Setenv("PIHOLE_SKIP_VERIFY", "")
-	t.Setenv("DOCKER_HOST", "")
-	t.Setenv("TRAEFIK_INSTANCES", "")
+	// Unset environment variables to ensure fallbacks are triggered
+	unsetEnv(t, "DNS_PROVIDER")
+	unsetEnv(t, "DNS_SOURCE")
+	unsetEnv(t, "INTERVAL_SECONDS")
+	unsetEnv(t, "IDENTIFIER")
+	unsetEnv(t, "LOG_LEVEL")
+	unsetEnv(t, "DOMAIN_FILTER")
+	unsetEnv(t, "CF_API_TOKEN")
+	unsetEnv(t, "PIHOLE_URL")
+	unsetEnv(t, "PIHOLE_API_TOKEN")
+	unsetEnv(t, "PIHOLE_API_VERSION")
+	unsetEnv(t, "PIHOLE_PASSWORD")
+	unsetEnv(t, "PIHOLE_SKIP_VERIFY")
+	unsetEnv(t, "DOCKER_HOST")
+	unsetEnv(t, "TRAEFIK_INSTANCES")
 
 	cfg := LoadConfig()
 
